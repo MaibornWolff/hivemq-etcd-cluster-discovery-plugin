@@ -25,7 +25,7 @@
             <outputDirectory>/${artifactId}/</outputDirectory>
         </file>
         <file>
-            <source>src/main/resources/s3discovery.properties</source>
+            <source>src/main/resources/EtcdDiscovery.properties</source>
             <outputDirectory>/${artifactId}/</outputDirectory>
         </file>
         <file>

@@ -1,6 +1,4 @@
 /*
- * Copyright 2018 dc-square GmbH
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,7 +21,7 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extensions.callbacks.S3DiscoveryCallback;
+import com.hivemq.extensions.callbacks.EtcdDiscoveryCallback;
 import com.hivemq.extensions.config.ConfigurationReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,26 +29,27 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Florian Limpöck
  * @author Abdullah Imal
+ * @author Alwin Ebermann
  * @since 4.0.0
  */
-public class S3DiscoveryExtensionMain implements ExtensionMain {
+public class EtcdDiscoveryExtensionMain implements ExtensionMain {
 
-    private static final Logger logger = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
+    private static final Logger logger = LoggerFactory.getLogger(EtcdDiscoveryExtensionMain.class);
 
-    S3DiscoveryCallback s3DiscoveryCallback;
+    EtcdDiscoveryCallback etcdDiscoveryCallback;
 
     @Override
     public void extensionStart(@NotNull final ExtensionStartInput extensionStartInput, @NotNull final ExtensionStartOutput extensionStartOutput) {
         try {
             final ConfigurationReader configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
 
-            s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
+            etcdDiscoveryCallback = new EtcdDiscoveryCallback(configurationReader);
 
-            Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
+            Services.clusterService().addDiscoveryCallback(etcdDiscoveryCallback);
 
-            logger.debug("Registered S3 discovery callback successfully.");
+            logger.debug("Registered Etcd discovery callback successfully.");
         } catch (final Exception ex) {
-            logger.error("Not able to start S3 Discovery Extension.", ex);
+            logger.error("Not able to start Etcd Discovery Extension.", ex);
             extensionStartOutput.preventExtensionStartup("Exception caught at extension start.");
         }
     }
@@ -58,8 +57,8 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
     @Override
     public void extensionStop(@NotNull final ExtensionStopInput extensionStopInput, @NotNull final ExtensionStopOutput extensionStopOutput) {
 
-        if (s3DiscoveryCallback != null) {
-            Services.clusterService().removeDiscoveryCallback(s3DiscoveryCallback);
+        if (etcdDiscoveryCallback != null) {
+            Services.clusterService().removeDiscoveryCallback(etcdDiscoveryCallback);
         }
     }
 }

@@ -1,6 +1,4 @@
 /*
- * Copyright 2018 dc-square GmbH
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,7 +14,6 @@
 
 package com.hivemq.extensions.config;
 
-import com.amazonaws.regions.Regions;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
@@ -32,11 +29,12 @@ import java.util.Properties;
 
 /**
  * @author Abdullah Imal
+ * @author Alwin Ebermann
  * @since 4.0.0
  */
 public class ConfigurationReader {
 
-    public static final String S3_CONFIG_FILE = "s3discovery.properties";
+    public static final String ETCD_CONFIG_FILE = "EtcdDiscovery.properties";
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
 
@@ -47,11 +45,11 @@ public class ConfigurationReader {
     }
 
     @Nullable
-    public S3Config readConfiguration() {
-        final File propertiesFile = new File(extensionHomeFolder, S3_CONFIG_FILE);
+    public EtcdConfig readConfiguration() {
+        final File propertiesFile = new File(extensionHomeFolder, ETCD_CONFIG_FILE);
 
         if (!propertiesFile.exists()) {
-            logger.error("Could not find '{}'. Please verify that the properties file is located under '{}'.", S3_CONFIG_FILE, extensionHomeFolder);
+            logger.error("Could not find '{}'. Please verify that the properties file is located under '{}'.", ETCD_CONFIG_FILE, extensionHomeFolder);
             return null;
         }
 
@@ -60,127 +58,80 @@ public class ConfigurationReader {
             return null;
         }
 
+        Properties properties = null;
         try (final InputStream inputStream = new FileInputStream(propertiesFile)) {
 
             logger.debug("Reading properties file '{}'.", propertiesFile.getAbsolutePath());
-            final Properties properties = new Properties();
+            properties = new Properties();
             properties.load(inputStream);
-
-            final S3Config s3Config = ConfigFactory.create(S3Config.class, properties);
-            if (!isValid(s3Config)) {
-                logger.error("Configuration of the S3 Discovery extension is not valid!");
-                return null;
-            }
-            logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
-            return s3Config;
-
         } catch (final IOException ex) {
             logger.error("An error occurred while reading the properties file {}", propertiesFile.getAbsolutePath(), ex);
         }
 
-        return null;
+        EtcdConfig etcdConfig = ConfigFactory.create(EtcdConfig.class, System.getenv(), properties);
+        if (!isValid(etcdConfig)) {
+            logger.error("Configuration of the Etcd Discovery extension is not valid!");
+            return null;
+        }
+        logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
+
+        if (! etcdConfig.getKey().endsWith("/")) {
+            etcdConfig.setProperty("key", etcdConfig.getKey() + "/");
+        }
+
+        return etcdConfig;
     }
 
-    private boolean isValid(@NotNull final S3Config s3Config) {
-        final String bucketName = s3Config.getBucketName();
-        if (bucketName == null || bucketName.isBlank()) {
-            logger.error("S3 Discovery Extension - Bucket name is empty!");
+    private boolean isValid(@NotNull final EtcdConfig etcdConfig) {
+        final String key = etcdConfig.getKey();
+        if (key == null || key.isBlank()) {
+            logger.error("Etcd Discovery Extension - Key name is empty!");
             return false;
-        }
-
-        final String bucketRegionName = s3Config.getBucketRegionName();
-        if (bucketRegionName == null || bucketRegionName.isEmpty()) {
-            logger.error("S3 Discovery Extension - Bucket region is empty!");
-            return false;
-        }
-
-        try {
-            Regions.fromName(bucketRegionName);
-        } catch (final IllegalArgumentException ignored) {
-            logger.error("S3 Discovery Extension - Given bucket region is not a valid region!");
-            return false;
-        }
-
-        final String authenticationTypeName = s3Config.getAuthenticationTypeName();
-        if (authenticationTypeName == null || authenticationTypeName.isEmpty()) {
-            logger.error("S3 Discovery Extension - Authentication type is empty!");
-            return false;
-        }
-
-        final AuthenticationType authenticationType;
-        try {
-            authenticationType = AuthenticationType.fromName(authenticationTypeName);
-        } catch (final IllegalArgumentException ignored) {
-            logger.error("S3 Discovery Extension - Given authentication type is not valid!");
-            return false;
-        }
-
-        if (authenticationType == AuthenticationType.ACCESS_KEY || authenticationType == AuthenticationType.TEMPORARY_SESSION) {
-
-            final String accessKeyId = s3Config.getAccessKeyId();
-            if (accessKeyId == null || accessKeyId.isEmpty()) {
-                logger.error("S3 Discovery Extension - Access key id is empty!");
-                return false;
-            }
-
-            final String accessKeySecret = s3Config.getAccessKeySecret();
-            if (accessKeySecret == null || accessKeySecret.isEmpty()) {
-                logger.error("S3 Discovery Extension - Access key secret is empty!");
-                return false;
-            }
-
-            if (authenticationType == AuthenticationType.TEMPORARY_SESSION) {
-                final String sessionToken = s3Config.getSessionToken();
-                if (sessionToken == null || sessionToken.isEmpty()) {
-                    logger.error("S3 Discovery Extension - Session token is empty!");
-                    return false;
-                }
-            }
         }
 
         final Long fileExpirationInSeconds;
         try {
-            fileExpirationInSeconds = s3Config.getFileExpirationInSeconds();
+            fileExpirationInSeconds = etcdConfig.getExpirationInSeconds();
         } catch (final UnsupportedOperationException ex) {
-            logger.error("S3 Discovery Extension - File expiration interval is not set!");
+            logger.error("Etcd Discovery Extension - File expiration interval is not set!");
             return false;
         }
         if (fileExpirationInSeconds < 0) {
-            logger.error("S3 Discovery Extension - File expiration interval is negative!");
+            logger.error("Etcd Discovery Extension - File expiration interval is negative!");
             return false;
         }
 
         final Long fileUpdateIntervalInSeconds;
         try {
-            fileUpdateIntervalInSeconds = s3Config.getFileUpdateIntervalInSeconds();
+            fileUpdateIntervalInSeconds = etcdConfig.getFileUpdateIntervalInSeconds();
         } catch (final UnsupportedOperationException ex) {
-            logger.error("S3 Discovery Extension - File update interval is not set!");
+            logger.error("Etcd Discovery Extension - File update interval is not set!");
             return false;
         }
         if (fileUpdateIntervalInSeconds < 0) {
-            logger.error("S3 Discovery Extension - File update interval is negative!");
+            logger.error("Etcd Discovery Extension - File update interval is negative!");
             return false;
         }
 
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
 
             if (fileUpdateIntervalInSeconds.equals(fileExpirationInSeconds)) {
-                logger.error("S3 Discovery Extension - File update interval is the same as the expiration interval!");
+                logger.error("Etcd Discovery Extension - File update interval is the same as the expiration interval!");
                 return false;
             }
 
             if (fileUpdateIntervalInSeconds == 0) {
-                logger.error("S3 Discovery Extension - File update interval is deactivated but expiration is set!");
+                logger.error("Etcd Discovery Extension - File update interval is deactivated but expiration is set!");
                 return false;
             }
 
             if (fileExpirationInSeconds == 0) {
-                logger.error("S3 Discovery Extension - File expiration is deactivated but update interval is set!");
+                logger.error("Etcd Discovery Extension - File expiration is deactivated but update interval is set!");
                 return false;
             }
 
             if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
-                logger.error("S3 Discovery Extension - File update interval is larger than expiration interval!");
+                logger.error("Etcd Discovery Extension - File update interval is larger than expiration interval!");
                 return false;
             }
         }

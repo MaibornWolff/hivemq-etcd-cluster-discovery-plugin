@@ -11,7 +11,7 @@ import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Mockito.*;
 
-public class S3DiscoveryExtensionMainTest {
+public class EtcdDiscoveryExtensionMainTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -26,40 +26,40 @@ public class S3DiscoveryExtensionMainTest {
     @Mock
     public ExtensionInformation extensionInformation;
 
-    private S3DiscoveryExtensionMain s3DiscoveryExtensionMain;
+    private EtcdDiscoveryExtensionMain etcdDiscoveryExtensionMain;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformation);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.getRoot());
-        s3DiscoveryExtensionMain = new S3DiscoveryExtensionMain();
+        etcdDiscoveryExtensionMain = new EtcdDiscoveryExtensionMain();
     }
 
     @Test
     public void test_start_success() {
-        s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        Assert.assertNotNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        etcdDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
+        Assert.assertNotNull(etcdDiscoveryExtensionMain.etcdDiscoveryCallback);
     }
 
     @Test
     public void test_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
-        s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        Assert.assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        etcdDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
+        Assert.assertNull(etcdDiscoveryExtensionMain.etcdDiscoveryCallback);
     }
 
     @Test(expected = RuntimeException.class)
     public void test_stop_success() {
-        s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        s3DiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
+        etcdDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
+        etcdDiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
     }
 
     @Test
     public void test_stop_no_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
-        s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        s3DiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
-        Assert.assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        etcdDiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
+        etcdDiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
+        Assert.assertNull(etcdDiscoveryExtensionMain.etcdDiscoveryCallback);
     }
 }
