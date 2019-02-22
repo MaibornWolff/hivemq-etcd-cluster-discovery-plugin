@@ -1,5 +1,7 @@
 package com.hivemq.extensions;
 
+import com.google.common.io.ByteSource;
+import com.google.common.io.Files;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extensions.config.ConfigurationReader;
 import com.hivemq.extensions.config.EtcdConfig;
@@ -10,6 +12,8 @@ import com.ibm.etcd.client.kv.KvClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,10 +36,26 @@ public class EtcdClient {
         }
         this.etcdConfig = newEtcdConfig;
         logger.trace("Loaded configuration successfully.");
-        // TODO:read and use more stuff from the config instead of hardcoding here
-
         if (client == null) {
-            KvStoreClient client = com.ibm.etcd.client.EtcdClient.forEndpoint(etcdConfig.getEndpoint(), etcdConfig.getPort()).withPlainText().build();
+            KvStoreClient client;
+            if (etcdConfig.getTls()) {
+                if (etcdConfig.getCAPath().equals("")) {
+                    logger.debug("Using system certificates for certificate verification");
+                    client = com.ibm.etcd.client.EtcdClient.forEndpoint(etcdConfig.getEndpoint(), etcdConfig.getPort()).build();
+                } else {
+                    logger.debug("Using custom CA for certificate verification");
+                    try {
+                        File file = new File(etcdConfig.getCAPath());
+                        ByteSource cert = Files.asByteSource(file);
+                        client = com.ibm.etcd.client.EtcdClient.forEndpoint(etcdConfig.getEndpoint(), etcdConfig.getPort()).withCaCert(cert).build();
+                    } catch (IOException e) {
+                        logger.error("Could not read etcd CA file: "+e);
+                        client = null;
+                    }
+                }
+            } else {
+                client = com.ibm.etcd.client.EtcdClient.forEndpoint(etcdConfig.getEndpoint(), etcdConfig.getPort()).withPlainText().build();
+            }
             this.client = client.getKvClient();
         }
     }
@@ -46,12 +66,10 @@ public class EtcdClient {
     }
 
     public void saveObject(@NotNull final String objectKey, @NotNull final String content) {
-        logger.info("Saving "+objectKey);
         client.put(bs(objectKey), bs(content)).sync();
     }
 
     public void deleteObject(@NotNull final String objectKey) {
-        logger.info("Deleting "+objectKey);
         client.delete(bs(objectKey)).sync();
     }
 

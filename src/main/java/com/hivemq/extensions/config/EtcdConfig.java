@@ -41,6 +41,14 @@ public interface EtcdConfig extends Config, Mutable {
     @DefaultValue("360")
     int expEnv();
 
+    @Key("HIVEMQ_ETCD_USE_TLS")
+    @DefaultValue("false")
+    String tlsEnv();
+
+    @Key("HIVEMQ_ETCD_CA_PATH")
+    @DefaultValue("")
+    String caPathEnv();
+
     @Key("key")
     @NotNull
     @DefaultValue("${HIVEMQ_ETCD_KEY}")
@@ -65,5 +73,15 @@ public interface EtcdConfig extends Config, Mutable {
     @NotNull
     @DefaultValue("${HIVEMQ_ETCD_PORT}")
     int getPort();
+
+    @Key("use-tls")
+    @NotNull
+    @DefaultValue("${HIVEMQ_ETCD_USE_TLS}")
+    boolean getTls();
+
+    @Key("ca-path")
+    @NotNull
+    @DefaultValue("${HIVEMQ_ETCD_CA_PATH}")
+    String getCAPath();
 
 }

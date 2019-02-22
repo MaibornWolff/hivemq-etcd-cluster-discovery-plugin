@@ -54,7 +54,7 @@ public class EtcdDiscoveryCallback implements ClusterDiscoveryCallback {
             try {
                 etcdClient.createOrUpdate();
             } catch (final Exception ex) {
-                logger.error("Configuration of the Etcd discovery extension couldn't be loaded. Skipping initial discovery.");
+                logger.error("Configuration of the Etcd discovery extension couldn't be loaded. Skipping initial discovery. "+ex);
                 return;
             }
             saveOwnInstance(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());

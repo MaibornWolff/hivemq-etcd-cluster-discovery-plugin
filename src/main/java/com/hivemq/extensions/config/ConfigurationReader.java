@@ -70,7 +70,7 @@ public class ConfigurationReader {
 
         EtcdConfig etcdConfig = ConfigFactory.create(EtcdConfig.class, System.getenv(), properties);
         if (!isValid(etcdConfig)) {
-            logger.error("Configuration of the Etcd Discovery extension is not valid!");
+            logger.error("Configuration of the etcd Discovery extension is not valid!");
             return null;
         }
         logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());

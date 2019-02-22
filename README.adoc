@@ -44,6 +44,8 @@ Configuration from `etcdDiscovery.properties` will always take precedent over en
 | etcd-port |    HIVEMQ_ETCD_PORT       |          | etcd port to connect at
 | expiration  |HIVEMQ_ETCD_EXPIRATION     |          | Time in seconds after which an entry in etcd is considered expired
 | update-interval | HIVEMQ_ETCD_UPDATE_INTERVAL      |          | Time in seconds after which an entry in etcd is refreshed (Must be smaller than `file-expiration`)
+| use-tls    | HIVEMQ_ETCD_USE_TLS  | | Use TLS for connection to etcd
+| ca-path    | HIVEMQ_ETCD_CA_PATH  | | Certificate authority to use for validating tls connection to etcd - if not set, system certificates will be used
 |===
 
 .Default Configuration
@@ -54,4 +56,6 @@ etcd-endpoint=
 etcd-port=2379
 expiration=360
 update-interval=180
+use-tls=false
+ca-path=
 ----
