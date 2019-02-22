@@ -36,6 +36,7 @@ public class EtcdDiscoveryExtensionMain implements ExtensionMain {
 
     private static final Logger logger = LoggerFactory.getLogger(EtcdDiscoveryExtensionMain.class);
 
+    // REVIEW: why package scoped? Could this be private?
     EtcdDiscoveryCallback etcdDiscoveryCallback;
 
     @Override
