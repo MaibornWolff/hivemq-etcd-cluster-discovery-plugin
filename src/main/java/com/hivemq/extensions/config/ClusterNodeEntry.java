@@ -16,13 +16,7 @@ package com.hivemq.extensions.config;
 
 import com.google.gson.Gson;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 /**
  * @author Abdullah Imal
@@ -53,19 +47,6 @@ public class ClusterNodeEntry {
         this.creationTimeInMillis = System.currentTimeMillis();
     }
 
-    @Nullable
-    public static ClusterNodeEntry parseClusterNodeEntry(@NotNull final String entryContent) {
-        if (entryContent == null) {
-            throw new NullPointerException("EntryContent must not be null!");
-        }
-        if (entryContent.isBlank()) {
-            throw new IllegalArgumentException("EntryContent must not be empty!");
-        }
-
-        Gson g = new Gson();
-        return g.fromJson(entryContent, ClusterNodeEntry.class);
-    }
-
     @NotNull
     public String getClusterId() {
         return clusterId;
@@ -85,10 +66,18 @@ public class ClusterNodeEntry {
         return creationPlusExpirationInMillis < System.currentTimeMillis();
     }
 
-    @Override
-    public String toString() {
+    public String toJson() {
         Gson g = new Gson();
         return g.toJson(this);
     }
 
+    @Override
+    public String toString() {
+        return "ClusterNodeEntry{" +
+                "clusterId='" + clusterId + '\'' +
+                ", clusterNodeIP='" + clusterNodeIP + '\'' +
+                ", clusterNodePort=" + clusterNodePort +
+                ", creationTimeInMillis=" + creationTimeInMillis +
+                '}';
+    }
 }

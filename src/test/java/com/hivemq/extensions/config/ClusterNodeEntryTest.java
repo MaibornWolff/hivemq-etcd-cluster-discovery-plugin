@@ -4,8 +4,6 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddres
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 public class ClusterNodeEntryTest {
@@ -34,8 +32,8 @@ public class ClusterNodeEntryTest {
     @Test
     public void test_cluster_node_file_equals() {
         final ClusterNodeEntry clusterNodeEntry = new ClusterNodeEntry(nodeId, clusterNodeAddress);
-        final String clusterNodeFileString = clusterNodeEntry.toString();
-        final ClusterNodeEntry newClusterNodeEntry = ClusterNodeEntry.parseClusterNodeEntry(clusterNodeFileString);
+        final String clusterNodeFileString = clusterNodeEntry.toJson();
+        final ClusterNodeEntry newClusterNodeEntry = ClusterNodeEntryUtils.parseClusterNodeEntry(clusterNodeFileString);
         Assert.assertTrue(clusterNodeEntry.toString().contentEquals(newClusterNodeEntry.toString()));
     }
 
@@ -88,22 +86,14 @@ public class ClusterNodeEntryTest {
         Assert.assertFalse(clusterNodeEntry.isExpired(2));
     }
 
-    @Test
-    public void test_parseClusterNodeFile_success() {
-        final ClusterNodeEntry clusterNodeEntry1 = new ClusterNodeEntry(nodeId, clusterNodeAddress);
-        final String clusterNodeFile1String = clusterNodeEntry1.toString();
-        final ClusterNodeEntry clusterNodeEntry2 = ClusterNodeEntry.parseClusterNodeEntry(clusterNodeFile1String);
-        Assert.assertTrue(clusterNodeEntry1.toString().contentEquals(clusterNodeEntry2.toString()));
-    }
-
     @Test(expected = NullPointerException.class)
     public void test_parseClusterNodeFile_null() {
-        ClusterNodeEntry.parseClusterNodeEntry(null);
+        ClusterNodeEntryUtils.parseClusterNodeEntry(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void test_parseClusterNodeFile_blank() {
-        ClusterNodeEntry.parseClusterNodeEntry("  ");
+        ClusterNodeEntryUtils.parseClusterNodeEntry("  ");
     }
 
 }

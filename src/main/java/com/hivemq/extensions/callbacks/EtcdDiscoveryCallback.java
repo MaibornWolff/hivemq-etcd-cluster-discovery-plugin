@@ -40,8 +40,7 @@ public class EtcdDiscoveryCallback implements ClusterDiscoveryCallback {
     private static final Logger logger = LoggerFactory.getLogger(EtcdDiscoveryCallback.class);
 
     @NotNull
-    EtcdClient etcdClient;
-
+    private EtcdClient etcdClient;
     private ClusterNodeEntry ownNodeEntry;
 
     public EtcdDiscoveryCallback(@NotNull final ConfigurationReader configurationReader) {
@@ -96,7 +95,7 @@ public class EtcdDiscoveryCallback implements ClusterDiscoveryCallback {
     private void saveOwnInstance(@NotNull final String ownClusterId, @NotNull final ClusterNodeAddress ownAddress) throws Exception {
         ClusterNodeEntry newNodeFile = new ClusterNodeEntry(ownClusterId, ownAddress);
 
-        etcdClient.saveObject(etcdClient.getEtcdConfig().getKey() + ownClusterId, newNodeFile.toString());
+        etcdClient.saveObject(etcdClient.getEtcdConfig().getKey() + ownClusterId, newNodeFile.toJson());
         ownNodeEntry = newNodeFile;
 
         logger.debug("Updated own Etcd entry '{}'.", ownClusterId);
