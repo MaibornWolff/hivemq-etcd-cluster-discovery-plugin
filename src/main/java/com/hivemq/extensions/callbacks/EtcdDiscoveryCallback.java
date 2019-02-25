@@ -39,20 +39,14 @@ public class EtcdDiscoveryCallback implements ClusterDiscoveryCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(EtcdDiscoveryCallback.class);
 
-    // REVIEW: can this be private?
     @NotNull
-    EtcdClient etcdClient;
-
+    private EtcdClient etcdClient;
     private ClusterNodeEntry ownNodeEntry;
 
     public EtcdDiscoveryCallback(@NotNull final ConfigurationReader configurationReader) {
         this.etcdClient = new EtcdClient(configurationReader);
     }
 
-    // REVIEW: general note for this and reload: the HiveMQ extension docs say never to block calls to output ...
-    // I haven't implemented a ClusterDiscoveryCallback myself, so not sure if it's relevant here, but it may be
-    // worth putting the code for these two methods in the extension executor service? You could also ping dc-square
-    // and ask their opinion on this, perhaps.
     @Override
     public void init(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
@@ -101,7 +95,7 @@ public class EtcdDiscoveryCallback implements ClusterDiscoveryCallback {
     private void saveOwnInstance(@NotNull final String ownClusterId, @NotNull final ClusterNodeAddress ownAddress) throws Exception {
         ClusterNodeEntry newNodeFile = new ClusterNodeEntry(ownClusterId, ownAddress);
 
-        etcdClient.saveObject(etcdClient.getEtcdConfig().getKey() + ownClusterId, newNodeFile.toString());
+        etcdClient.saveObject(etcdClient.getEtcdConfig().getKey() + ownClusterId, newNodeFile.toJson());
         ownNodeEntry = newNodeFile;
 
         logger.debug("Updated own Etcd entry '{}'.", ownClusterId);
@@ -157,6 +151,4 @@ public class EtcdDiscoveryCallback implements ClusterDiscoveryCallback {
         return clusterNodeEntries;
 
     }
-
-    // REVIEW: TooMuchWhitespaceException 😂 ... but that's just my taste, doesn't necessarily need changing - it's your plugin 😉
 }

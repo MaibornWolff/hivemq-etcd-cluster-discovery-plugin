@@ -33,10 +33,8 @@ import org.slf4j.LoggerFactory;
  * @since 4.0.0
  */
 public class EtcdDiscoveryExtensionMain implements ExtensionMain {
-
     private static final Logger logger = LoggerFactory.getLogger(EtcdDiscoveryExtensionMain.class);
 
-    // REVIEW: why package scoped? Could this be private?
     EtcdDiscoveryCallback etcdDiscoveryCallback;
 
     @Override

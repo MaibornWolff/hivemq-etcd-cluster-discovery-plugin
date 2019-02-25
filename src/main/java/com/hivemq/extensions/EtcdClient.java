@@ -20,10 +20,10 @@ import java.util.List;
 import static com.ibm.etcd.client.KeyUtils.bs;
 
 public class EtcdClient {
+    private static Logger logger = LoggerFactory.getLogger(EtcdClient.class);
+
     private ConfigurationReader configurationReader;
     private EtcdConfig etcdConfig;
-    // REVIEW: you should separate member i-vars and c-vars into separate sections - generally it's preferred to have the statics first, then the i-vars.
-    private static Logger logger = LoggerFactory.getLogger(EtcdClient.class);
     private KvClient client;
 
     public EtcdClient(@NotNull final ConfigurationReader configurationReader) {
@@ -77,11 +77,9 @@ public class EtcdClient {
     public List<String> getObjects(@NotNull final String objectKey) {
         RangeResponse rr = client.get(bs(objectKey)).asPrefix().sync();
         List<String> nodeStrings = new ArrayList<>();
-        // REVIEW: you might also want to format the code ;)
-        for(int i=0;i<rr.getKvsCount();i++) { // TODO: write this as lambda
-            KeyValue kv=rr.getKvs(i);
-            nodeStrings.add(kv.getValue().toStringUtf8());
-        }
+        rr.getKvsList().forEach(kvs -> {
+            nodeStrings.add(kvs.getValue().toStringUtf8());
+        });
         return nodeStrings;
     }
 
