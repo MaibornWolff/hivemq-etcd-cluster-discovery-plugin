@@ -5,7 +5,7 @@
 
 *Extension Type*: Integration
 
-*Version*: 4.0.0
+*Version*: 0.1
 
 *License*: Apache License 2.0
 
@@ -15,12 +15,14 @@
 This HiveMQ extension allows your HiveMQ cluster nodes to discover each other dynamically by regularly exchanging their information via etcd.
 
 
-HiveMQ instances are added at runtime as soon as they become available by placing their information, on how to connect to them, to the configured bucket. The extension will regularly check the configured etcd key for files from other HiveMQ nodes. Additionally every broker updates its own entry on a regular basis to prevent the entry from expiring.
+HiveMQ instances are added at runtime as soon as they become available by placing their information, on how to connect
+to them, to the configured key. The extension will regularly check the configured etcd key for files from other HiveMQ nodes.
+Additionally every broker updates its own entry on a regular basis to prevent the entry from expiring.
 
 
 === Installation
 
-* Download the extension from the {hivemq-downloads}[HiveMQ website^].
+* Download the extension from GitHub's release page.
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
 * Modify the `etcdDiscovery.properties` file for your needs or set environment variables
 * Change the {hivemq-cluster-discovery}[discovery mechanism^] of HiveMQ to `extension`.
