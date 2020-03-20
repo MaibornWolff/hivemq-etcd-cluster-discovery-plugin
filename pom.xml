@@ -22,7 +22,7 @@
     <groupId>com.hivemq.extension</groupId>
     <artifactId>hivemq-etcd-cluster-discovery-extension</artifactId>
     <description>HiveMQ Extension for cluster discovery with etcd</description>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
 
     <properties>
         <extension.name>Etcd Cluster Discovery Extension</extension.name>
